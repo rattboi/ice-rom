@@ -1,12 +1,14 @@
-PROJ = rom
+PROJ = ice-rom
+
+SRC_FILES = top.v rom.v uart.v
 
 PIN_DEF = icestick.pcf
 DEVICE = hx1k
 
 all: $(PROJ).rpt $(PROJ).bin
 
-%.blif: %.v
-	yosys -p 'synth_ice40 -top top -blif $@' $<
+%.blif: $(SRC_FILES)
+	yosys -p 'synth_ice40 -top top -blif $@' $^
 
 %.asc: $(PIN_DEF) %.blif
 	arachne-pnr -d $(subst hx,,$(subst lp,,$(DEVICE))) -o $@ -p $^
@@ -25,7 +27,7 @@ sudo-prog: $(PROJ).bin
 	sudo iceprog $<
 
 clean:
-	rm -f $(PROJ).blif $(PROJ).asc $(PROJ).rpt $(PROJ).bin
+	rm -f *.blif *.asc *.rpt *.bin
 
 .SECONDARY:
 .PHONY: all prog clean
