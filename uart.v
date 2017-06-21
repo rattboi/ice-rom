@@ -1,54 +1,59 @@
-module uart (
-	input  CLK,
-	input  RX,
-	output TX,
-  output reg [4:0] LEDS
+// Simple TX-only UART from http://excamera.com/sphinx/fpga-uart.html
+module uart(
+   // Outputs
+   uart_busy,   // High means UART is transmitting
+   uart_tx,     // UART transmit wire
+   // Inputs
+   uart_wr_i,   // Raise to transmit byte
+   uart_dat_i,  // 8-bit data
+   sys_clk_i,   // System clock, 12 MHz
+   sys_rst_i    // System reset
 );
-  // UART part
-	parameter integer BAUD_RATE = 9600;
-	parameter integer CLOCK_FREQ_HZ = 12000000;
-	localparam integer HALF_PERIOD = CLOCK_FREQ_HZ / (2 * BAUD_RATE);
 
-	reg [7:0] buffer;
-	reg buffer_valid;
+  input uart_wr_i;
+  input [7:0] uart_dat_i;
+  input sys_clk_i;
+  input sys_rst_i;
 
-	reg [$clog2(3*HALF_PERIOD):0] cycle_cnt;
-	reg [3:0] bit_cnt = 0;
-	reg recv = 0;
+  output uart_busy;
+  output uart_tx;
 
-	always @(posedge CLK) begin
-		buffer_valid <= 0;
-		if (!recv) begin
-			if (!RX) begin
-				cycle_cnt <= HALF_PERIOD;
-				bit_cnt <= 0;
-				recv <= 1;
-			end
-		end else begin
-			if (cycle_cnt == 2*HALF_PERIOD) begin
-				cycle_cnt <= 0;
-				bit_cnt <= bit_cnt + 1;
-				if (bit_cnt == 9) begin
-					buffer_valid <= 1;
-					recv <= 0;
-				end else begin
-					buffer <= {RX, buffer[7:1]};
-				end
-			end else begin
-				cycle_cnt <= cycle_cnt + 1;
-			end
-		end
-	end
+  reg [3:0] bitcount;
+  reg [8:0] shifter;
+  reg uart_tx;
 
-	always @(posedge CLK) begin
-		if (buffer_valid) begin
-			if (buffer == "1") LEDS[0] <= !LEDS[0];
-			if (buffer == "2") LEDS[1] <= !LEDS[1];
-			if (buffer == "3") LEDS[2] <= !LEDS[2];
-			if (buffer == "4") LEDS[3] <= !LEDS[3];
-			if (buffer == "5") LEDS[4] <= !LEDS[4];
-		end
-	end
+  wire uart_busy = |bitcount[3:1];
+  wire sending = |bitcount;
 
-	assign TX = RX;
-endmodule
+  // sys_clk_i is 12MHz.  We want a 115200Hz clock
+
+  reg [28:0] d;
+  wire [28:0] dInc = d[28] ? (115200) : (115200 - 12000000);
+  wire [28:0] dNxt = d + dInc;
+  always @(posedge sys_clk_i)
+  begin
+    d = dNxt;
+  end
+  wire ser_clk = ~d[28]; // this is the 115200 Hz clock
+
+  always @(posedge sys_clk_i)
+  begin
+    if (sys_rst_i) begin
+      uart_tx <= 1;
+      bitcount <= 0;
+      shifter <= 0;
+    end else begin
+      // just got a new byte
+      if (uart_wr_i & ~uart_busy) begin
+        shifter <= { uart_dat_i[7:0], 1'h0 };
+        bitcount <= (1 + 8 + 2);
+      end
+
+      if (sending & ser_clk) begin
+        { shifter, uart_tx } <= { 1'h1, shifter };
+        bitcount <= bitcount - 1;
+      end
+    end
+  end
+
+  endmodule
