@@ -1,0 +1,117 @@
+# -----------------------------------------------------------------------------
+#- Icestick constraint file (.pcf)
+#- By Juan Gonzalez (Obijuan)
+#- April - 2016
+#- GPL license
+# -----------------------------------------------------------------------------
+# --  Pinout: http://www.pighixxx.com/test/2016/02/icestick-pinout/
+# --  Guide: https://github.com/Obijuan/open-fpga-verilog-tutorial/blob/master/tutorial/doc/icestickusermanual.pdf
+
+# -- Icestick leds map
+#
+#           D1
+#        D4 D5 D2
+#           D3
+#
+# --    D1-D4: Red leds
+# --    D5: green led
+
+
+# ------------ Red leds ------------------------------------------------------
+set_io LEDS[0] 99
+set_io LEDS[1] 98
+set_io LEDS[2] 97
+set_io LEDS[3] 96
+
+# ------------ Green led -----------------------------------------------------
+set_io LEDS[4] 95
+
+# ------------ PMOD connector ------------------------------------------------
+#
+#   Pmod standar numeration (Oriented according the icestick, with the
+#               usb connector pointing to the left and IRda to the right)
+#
+#      --------
+#     |  12  6 |
+#     |  11  5 |
+#     |  10  4 |
+#     |  9   3 |
+#     |  8   2 |
+#     |  7   1 | <
+#      --------
+#
+#   FPGA pins:
+#
+#     ----------
+#    | 3V3  3V3 |
+#    | GND  GND |
+#    | 91    81 |
+#    | 90    80 |
+#    | 88    79 |
+#    | 87    78 | <
+#     ----------
+#
+set_io DATA[0] 78
+set_io DATA[1] 79
+set_io DATA[2] 80
+set_io DATA[3] 81
+set_io DATA[4] 87
+set_io DATA[5] 88
+set_io DATA[6] 90
+set_io DATA[7] 91
+
+# ------------------------ EXPANSION I/O ------------------------------------
+#
+# -- Numeration
+#
+#  Top Row (TR):
+#                                       v
+#          --------------------------------
+#         |  10  9  8  7  6  5 4  3  2  1  |
+#          --------------------------------
+#
+#  Bottom Row (BR):
+#
+#                                       v
+#          --------------------------------
+#         |  10  9  8  7  6  5 4  3  2  1  |
+#          --------------------------------
+#
+# --- FPGA pins
+#
+#  Top Row (TR)
+#                                                       v
+#        --------------------------------------------------
+#       | 119  118  117  116  115  114  113  112  GND  3v3 |
+#        --------------------------------------------------
+#
+#
+#  Bottom Row (BR)
+#
+#                                                       v
+#         -------------------------------------------------
+#        | 44   45   47   48   56   60   61   62  GND  3v3 |
+#         -------------------------------------------------
+#
+# -- Top Row
+set_io ADDR[0] 112
+set_io ADDR[1] 113
+set_io ADDR[2] 114
+set_io ADDR[3] 115
+set_io ADDR[4] 116
+set_io ADDR[5] 117
+set_io ADDR[6] 118
+set_io ADDR[7] 119
+#
+# -- Bottom Row
+set_io ADDR[8] 62
+set_io ADDR[9] 61
+set_io ADDR[10] 60
+set_io ADDR[11] 56
+set_io ADDR[12] 48
+
+# -------------------------- SYSTEM CLOCK ------------------------------------
+set_io CLK 21
+
+set_io TX  8
+set_io RX  9
