@@ -7,7 +7,7 @@ module rom (
   // ROM simulator part
   reg [7:0] ROM [0:2047];
   initial begin
-    $readmemh("rom.hex", ROM);
+    $readmemh("image.hex", ROM);
   end
 
   always @(posedge CLK)
